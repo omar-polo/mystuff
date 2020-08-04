@@ -1,0 +1,17 @@
+$OpenBSD$
+
+z_crc_t is defined as unsigned long on zlib 1.2.11, which newer
+than the one we have in base.
+
+Index: thirdparty/minizip/zip.c
+--- thirdparty/minizip/zip.c.orig
++++ thirdparty/minizip/zip.c
+@@ -111,6 +111,8 @@ const char zip_copyright[] =" zip 1.01 Copyright 1998-
+ 
+ #define SIZECENTRALHEADER (0x2e) /* 46 */
+ 
++typedef unsigned long z_crc_t;
++
+ typedef struct linkedlist_datablock_internal_s
+ {
+   struct linkedlist_datablock_internal_s* next_datablock;

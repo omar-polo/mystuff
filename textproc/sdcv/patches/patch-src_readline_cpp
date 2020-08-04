@@ -1,0 +1,17 @@
+$OpenBSD$
+
+Bring in cstring and cwchar so C++ does not complain about "error:
+functions that differ only in their return type cannot be overloaded".
+
+Index: src/readline.cpp
+--- src/readline.cpp.orig
++++ src/readline.cpp
+@@ -24,6 +24,8 @@
+ 
+ #include <cstdio>
+ #include <cstdlib>
++#include <cstring>
++#include <cwchar>
+ #ifdef WITH_READLINE
+ #include <readline/history.h>
+ #include <readline/readline.h>

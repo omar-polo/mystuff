@@ -1,0 +1,17 @@
+$OpenBSD$
+
+remove hardcoded -O3
+
+Index: platform/linuxbsd/detect.py
+--- platform/linuxbsd/detect.py.orig
++++ platform/linuxbsd/detect.py
+@@ -86,7 +86,8 @@ def configure(env):
+ 
+     if env["target"] == "release":
+         if env["optimize"] == "speed":  # optimize for speed (default)
+-            env.Prepend(CCFLAGS=["-O3"])
++            # env.Prepend(CCFLAGS=["-O3"])
++            pass
+         else:  # optimize for size
+             env.Prepend(CCFLAGS=["-Os"])
+ 

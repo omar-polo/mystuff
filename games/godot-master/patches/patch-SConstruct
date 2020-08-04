@@ -1,0 +1,27 @@
+$OpenBSD$
+
+LOCAL ONLY, DO NOT INCLUDE IN SUBMISSIONS
+
+Index: SConstruct
+--- SConstruct.orig
++++ SConstruct
+@@ -484,16 +487,11 @@ if selected_platform in platform_list:
+         else:  # 'no'
+             env.Append(CCFLAGS=["-w"])
+         if env["werror"]:
+-            env.Append(CCFLAGS=["-Werror"])
+-            # FIXME: Temporary workaround after the Vulkan merge, remove once warnings are fixed.
+-            if methods.using_gcc(env):
+-                env.Append(CXXFLAGS=["-Wno-error=cpp"])
+-                if cc_version_major == 7:  # Bogus warning fixed in 8+.
+-                    env.Append(CCFLAGS=["-Wno-error=strict-overflow"])
+-            else:
+-                env.Append(CXXFLAGS=["-Wno-error=#warnings"])
++            pass
+         else:  # always enable those errors
+             env.Append(CCFLAGS=["-Werror=return-type"])
++
++    env.Append(CCFLAGS=["-Wno-error", "-Wno-register"])
+ 
+     if hasattr(detect, "get_program_suffix"):
+         suffix = "." + detect.get_program_suffix()

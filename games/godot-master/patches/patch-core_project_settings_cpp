@@ -1,0 +1,21 @@
+$OpenBSD: patch-core_project_settings_cpp,v 1.2 2018/08/25 19:20:29 thfr Exp $
+
+revert long-distance matching in zstd which is based on private functions and
+doesn't compile if archivers/zstd is installed
+this is a revert of pertinent parts of commit 
+f3436a841a3b59fc3a9deb94d5fdfd1e550d0351
+based on github issue #17374
+
+Index: core/project_settings.cpp
+--- core/project_settings.cpp.orig
++++ core/project_settings.cpp
+@@ -489,9 +489,7 @@ Error ProjectSettings::setup(const String &p_path, con
+ 		}
+ 	}
+ 	// Using GLOBAL_GET on every block for compressing can be slow, so assigning here.
+-	Compression::zstd_long_distance_matching = GLOBAL_GET("compression/formats/zstd/long_distance_matching");
+ 	Compression::zstd_level = GLOBAL_GET("compression/formats/zstd/compression_level");
+-	Compression::zstd_window_log_size = GLOBAL_GET("compression/formats/zstd/window_log_size");
+ 
+ 	Compression::zlib_level = GLOBAL_GET("compression/formats/zlib/compression_level");
+ 

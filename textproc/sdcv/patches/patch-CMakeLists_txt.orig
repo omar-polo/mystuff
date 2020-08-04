@@ -1,0 +1,41 @@
+$OpenBSD$
+
+Index: CMakeLists.txt
+--- CMakeLists.txt.orig
++++ CMakeLists.txt
+@@ -37,7 +37,7 @@ if (WITH_READLINE)
+   endif ()
+ endif (WITH_READLINE)
+ 
+-option(ENABLE_NLS "Enable NLS support" True)
++option(ENABLE_NLS "Enable NLS support" False)
+ 
+ set(sdcv_SRCS
+   src/sdcv.cpp
+@@ -110,6 +110,11 @@ add_definitions(-DVERSION="${sdcv_VERSION}" -DHAVE_CON
+ 
+ add_executable(sdcv ${sdcv_SRCS})
+ 
++set_target_properties(sdcv
++	PROPERTIES
++	LINK_FLAGS ${GLIB2_LDFLAGS}
++)
++
+ target_link_libraries(sdcv
+   ${GLIB2_LIBRARIES}
+   ${ZLIB_LIBRARIES}
+@@ -120,12 +125,14 @@ if (ENABLE_NLS)
+ endif ()
+ 
+ include(CPack)
++include(GNUInstallDirs)
+ 
+ install(TARGETS sdcv DESTINATION "bin")
+ install(FILES doc/sdcv.1 DESTINATION "share/man/man1")
+ install(FILES doc/uk/sdcv.1 DESTINATION "share/man/uk/man1")
+ 
+ if (ENABLE_NLS)
++  message("gettext_outDir is ${gettext_outDir}")
+   install(DIRECTORY "${gettext_outDir}" DESTINATION "share")
+ endif ()
+ 

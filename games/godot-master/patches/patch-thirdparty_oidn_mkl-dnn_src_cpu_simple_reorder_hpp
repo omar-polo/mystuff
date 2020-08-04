@@ -1,0 +1,24 @@
+$OpenBSD$
+
+Index: thirdparty/oidn/mkl-dnn/src/cpu/simple_reorder.hpp
+--- thirdparty/oidn/mkl-dnn/src/cpu/simple_reorder.hpp.orig
++++ thirdparty/oidn/mkl-dnn/src/cpu/simple_reorder.hpp
+@@ -475,6 +475,9 @@ typename utils::enable_if<false
+                 : input_d.matches_tag(tag_o) && output_d.is_plain()); \
+     }
+ 
++#define TMP _B
++#undef _B
++
+ template <SIMPLE_REORDER_TEMPL_DECL>
+ struct simple_reorder_impl<SIMPLE_REORDER_TEMPL_CALL,
+ typename utils::enable_if<tag_i == any
+@@ -581,6 +584,8 @@ typename utils::enable_if<tag_i == any
+         return success;
+     }
+ };
++
++#define _B TMP
+ 
+ template <SIMPLE_REORDER_TEMPL_DECL>
+ struct simple_reorder_impl<SIMPLE_REORDER_TEMPL_CALL,

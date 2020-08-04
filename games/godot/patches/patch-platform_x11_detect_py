@@ -1,0 +1,40 @@
+$OpenBSD: patch-platform_x11_detect_py,v 1.2 2020/07/19 13:02:38 thfr Exp $
+
+aremove hardcoded -O2, found by bcallah@ and add sndio
+
+Index: platform/x11/detect.py
+--- platform/x11/detect.py.orig
++++ platform/x11/detect.py
+@@ -85,21 +85,12 @@ def configure(env):
+     ## Build type
+ 
+     if env["target"] == "release":
+-        if env["optimize"] == "speed":  # optimize for speed (default)
+-            env.Prepend(CCFLAGS=["-O3"])
+-        else:  # optimize for size
+-            env.Prepend(CCFLAGS=["-Os"])
+-
+         if env["debug_symbols"] == "yes":
+             env.Prepend(CCFLAGS=["-g1"])
+         if env["debug_symbols"] == "full":
+             env.Prepend(CCFLAGS=["-g2"])
+ 
+     elif env["target"] == "release_debug":
+-        if env["optimize"] == "speed":  # optimize for speed (default)
+-            env.Prepend(CCFLAGS=["-O2"])
+-        else:  # optimize for size
+-            env.Prepend(CCFLAGS=["-Os"])
+         env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
+ 
+         if env["debug_symbols"] == "yes":
+@@ -302,3 +293,7 @@ def configure(env):
+         env.ParseConfig("pkg-config alsa --libs")
+     else:
+         print("ALSA libraries not found, disabling driver")
++
++    print("Enabling sndio")
++    env.Append(CPPDEFINES=["SNDIO_ENABLED"])
++    env.Append(LDFLAGS=["-lsndio"])
+
+     if env["pulseaudio"]:
+         if os.system("pkg-config --exists libpulse") == 0:  # 0 means found

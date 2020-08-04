@@ -1,0 +1,67 @@
+$OpenBSD$
+
+Index: libobs/obs-nix.c
+--- libobs/obs-nix.c.orig
++++ libobs/obs-nix.c
+@@ -17,16 +17,18 @@
+ ******************************************************************************/
+ 
+ #include "obs-internal.h"
+-#if defined(__FreeBSD__)
++#if defined(__FreeBSD__) || defined(__OpenBSD__)
+ #define _GNU_SOURCE
+ #endif
+ #include <stdlib.h>
+ #include <stdio.h>
+ #include <unistd.h>
+-#if defined(__FreeBSD__)
++#if defined(__FreeBSD__) || defined(__OpenBSD__)
+ #include <sys/sysctl.h>
+ #endif
++#ifndef __OpenBSD__
+ #include <sys/sysinfo.h>
++#endif
+ #include <sys/utsname.h>
+ #include <xcb/xcb.h>
+ #if USE_XINPUT
+@@ -155,7 +157,7 @@ static void log_processor_info(void)
+ 	dstr_free(&proc_speed);
+ 	free(line);
+ }
+-#elif defined(__FreeBSD__)
++#elif defined(__FreeBSD__) || defined(__OpenBSD__)
+ static void log_processor_speed(void)
+ {
+ 	char *line = NULL;
+@@ -216,8 +218,14 @@ static void log_processor_info(void)
+ }
+ #endif
+ 
++#ifdef __OpenBSD__
+ static void log_memory_info(void)
+ {
++	blog(LOG_INFO, "Physical Memory: TODO");
++}
++#else
++static void log_memory_info(void)
++{
+ 	struct sysinfo info;
+ 	if (sysinfo(&info) < 0)
+ 		return;
+@@ -228,6 +236,7 @@ static void log_memory_info(void)
+ 	     ((uint64_t)info.freeram + (uint64_t)info.bufferram) *
+ 		     info.mem_unit / 1024 / 1024);
+ }
++#endif
+ 
+ static void log_kernel_version(void)
+ {
+@@ -316,7 +325,7 @@ static void log_distribution_info(void)
+ 
+ void log_system_info(void)
+ {
+-#if defined(__linux__) || defined(__FreeBSD__)
++#if defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
+ 	log_processor_info();
+ #endif
+ 	log_processor_cores();

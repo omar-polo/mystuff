@@ -1,0 +1,14 @@
+$OpenBSD$
+
+Index: engine/SCons/Tool/gxx.py
+--- engine/SCons/Tool/gxx.py.orig
++++ engine/SCons/Tool/gxx.py
+@@ -43,7 +43,7 @@ import SCons.Util
+ from . import gcc
+ from . import cxx
+ 
+-compilers = ['g++']
++compilers = ['c++']
+ 
+ 
+ def generate(env):
