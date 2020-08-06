@@ -13,18 +13,20 @@ class AudioDriverSndio : public AudioDriver {
 	Thread *thread;
 	Mutex *mutex;
 
-	int32_t *samples_in;
+	Vector<int32_t> samples_in;
+	Vector<int16_t> samples_out;
+
 	struct sio_hdl *handle;
 
 	static void thread_func(void*);
 	size_t buffer_size;
+	size_t buffer_frames;
 
 	unsigned int mix_rate;
 	int channels;
 	bool active;
 	bool thread_exited;
 	mutable bool exit_thread;
-	bool pcm_open;
 	SpeakerMode speaker_mode;
 
 public:
