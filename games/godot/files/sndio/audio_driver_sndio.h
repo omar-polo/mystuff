@@ -20,7 +20,6 @@ class AudioDriverSndio : public AudioDriver {
 
 	static void thread_func(void*);
 	size_t buffer_size;
-	size_t buffer_frames;
 
 	unsigned int mix_rate;
 	int channels;
