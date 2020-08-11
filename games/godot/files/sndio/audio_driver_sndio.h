@@ -19,7 +19,7 @@ class AudioDriverSndio : public AudioDriver {
 	struct sio_hdl *handle;
 
 	static void thread_func(void*);
-	size_t buffer_size;
+	size_t period_size;
 
 	unsigned int mix_rate;
 	int channels;
