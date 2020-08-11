@@ -29,6 +29,7 @@ Error AudioDriverSndio::init() {
 
 	par.bits = 16;
 	par.rate = GLOBAL_GET("audio/mix_rate");
+	// par.appbufsz = 1024; // 8820;
 	// par.appbufsz = closest_power_of_2(latency * par.rate / 1000) * channels;
 	// printf("requested appbufsz: %u\n", par.appbufsz);
 
@@ -36,7 +37,7 @@ Error AudioDriverSndio::init() {
 	 * XXX: require SIO_SYNC instead of SIO_IGNORE (the default) ?
 	 * what is the most sensible choice for a game?
 	 */
-	// par.xrun = SIO_ERROR;
+	par.xrun = SIO_ERROR;
 
 	if (!sio_setpar(handle, &par))
 		/* XXX: close the handle here? */
@@ -48,24 +49,27 @@ Error AudioDriverSndio::init() {
 
 	mix_rate = par.rate;
 	channels = par.pchan;
-	buffer_size = par.appbufsz; // / channels;
+	buffer_size = par.appbufsz * channels;
 
-	samples_in.resize(buffer_size * channels);
-	samples_out.resize(buffer_size * channels);
+	samples_in.resize(buffer_size);
+	samples_out.resize(buffer_size);
 
 	int global_mix_rate = GLOBAL_GET("audio/mix_rate");
 	int global_output_latency = GLOBAL_GET("audio/output_latency");
 
 	printf("computed latency: %u\n", par.bufsz * 1000 / mix_rate);
+	// GLOBAL_DEF("audio/latency", par.bufsz * 1000 / mix_rate);
 
 	printf("global mix rate:       %d\n", global_mix_rate);
 	printf("global output latency: %d\n", global_output_latency);
-	printf("mix rate:              %d\n", mix_rate);
-	printf("buffer size:           %zu\n", buffer_size);
-	printf("channels:              %d\n", channels);
-	printf("bufsz:                 %u\n", par.bufsz);
-	printf("appbufsz:              %u\n", par.appbufsz);
-	printf("round:                 %u\n", par.round);
+	printf("mix rate:	       %d\n", mix_rate);
+	printf("buffer size:	       %zu\n", buffer_size);
+	printf("channels:	       %d\n", channels);
+	printf("bufsz:		       %u\n", par.bufsz);
+	printf("appbufsz:	       %u\n", par.appbufsz);
+	printf("round:		       %u\n", par.round);
+	printf("par.bps		       %u\n", par.bps);
+	printf("par.bits	       %u\n", par.bits);
 
 	if (!sio_start(handle)) {
 		ERR_PRINTS("sio_start failed");
@@ -85,21 +89,21 @@ void AudioDriverSndio::thread_func(void *p_udata) {
 		ad->lock();
 
 		if (!ad->active) {
-			ad->unlock();
-			OS::get_singleton()->delay_usec(1000);
-			ad->lock();
+			// ad->unlock();
+			// OS::get_singleton()->delay_usec(1000);
+			// ad->lock();
 
 			for (size_t i = 0; i < ad->buffer_size; ++i)
 				ad->samples_out.write[i] = 0;
-		 } else {
-			ad->audio_server_process(ad->buffer_size, ad->samples_in.ptrw());
+		} else {
+			ad->audio_server_process(ad->buffer_size/ad->channels, ad->samples_in.ptrw());
 
 			for (size_t i = 0; i < ad->buffer_size; ++i)
 				ad->samples_out.write[i] = ad->samples_in[i] >> 16;
 		}
 
-		size_t todo = ad->buffer_size * ad->channels * sizeof(int16_t);
-                size_t total = 0;
+		size_t todo = ad->buffer_size * sizeof(int16_t);
+		size_t total = 0;
 
 		while (todo != 0  /* && !ad->exit_thread */) {
 			const uint8_t *src = (const uint8_t*)ad->samples_out.ptr();
@@ -118,7 +122,7 @@ void AudioDriverSndio::thread_func(void *p_udata) {
 				} else {
 					ERR_PRINTS("sndio: temp error?");
 
-                                        ad->unlock();
+					ad->unlock();
 
 					OS::get_singleton()->delay_usec(1000);
 
