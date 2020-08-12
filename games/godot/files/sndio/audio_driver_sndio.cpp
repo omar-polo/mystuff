@@ -1,9 +1,4 @@
 /* $OpenBSD$ */
-/*
- * (setq tab-width 8)
- * (setq indent-tabs-mode t)
- * (setq c-basic-offset 8)
- */
 
 #include "audio_driver_sndio.h"
 
@@ -30,7 +25,6 @@ Error AudioDriverSndio::init() {
 
 	par.bits = 16;
 	par.rate = GLOBAL_GET("audio/mix_rate");
-	printf("requested appbufsz: %u\n", par.appbufsz);
 
 	/*
 	 * XXX: require SIO_SYNC instead of SIO_IGNORE (the default) ?
@@ -50,20 +44,6 @@ Error AudioDriverSndio::init() {
 
 	samples_in.resize(period_size * channels);
 	samples_out.resize(period_size * channels);
-
-	int global_mix_rate = GLOBAL_GET("audio/mix_rate");
-	int global_output_latency = GLOBAL_GET("audio/output_latency");
-
-	printf("global mix rate:       %d\n", global_mix_rate);
-	printf("global output latency: %d\n", global_output_latency);
-	printf("mix rate:	       %d\n", mix_rate);
-	printf("buffer size:	       %zu\n", period_size);
-	printf("channels:	       %d\n", channels);
-	printf("bufsz:		       %u\n", par.bufsz);
-	printf("appbufsz:	       %u\n", par.appbufsz);
-	printf("round:		       %u\n", par.round);
-	printf("par.bps		       %u\n", par.bps);
-	printf("par.bits	       %u\n", par.bits);
 
 	mutex = Mutex::create();
 	thread = Thread::create(AudioDriverSndio::thread_func, this);
@@ -96,7 +76,6 @@ void AudioDriverSndio::thread_func(void *p_udata) {
 					break;
 				}
 			}
-			// int revents = sio_revents(ad->handle, pfds);
 		}
 
 		ad->lock();
@@ -145,12 +124,10 @@ void AudioDriverSndio::thread_func(void *p_udata) {
 		ad->unlock();
 	}
 
-	printf("sndio end of loop\n");
 	ad->thread_exited = true;
 }
 
 void AudioDriverSndio::start() {
-	printf("sndio: start\n");
 	active = true;
 }
 
@@ -175,8 +152,6 @@ void AudioDriverSndio::unlock() {
 }
 
 void AudioDriverSndio::finish() {
-	printf("sndio: finish\n");
-
 	if (thread) {
 		exit_thread = true;
 		Thread::wait_to_finish(thread);
