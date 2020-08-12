@@ -8,15 +8,15 @@ PKGNAME =	godot-${V}
 CATEGORIES =	games
 HOMEPAGE =	https://godotengine.org/
 MAINTAINER =	Thomas Frohwein <thfr@openbsd.org>
-REVISION =	0
+REVISION =	1
 
 # MIT
 PERMIT_PACKAGE =	Yes
 
 WANTLIB += ${COMPILER_LIBCXX}
 WANTLIB += GL X11 Xau Xcursor Xdmcp Xext Xfixes Xi Xinerama Xrandr
-WANTLIB += Xrender ao c enet execinfo freetype intl m mbedtls mbedcrypto
-WANTLIB += mbedx509 mpcdec ogg opus opusfile png theora theoradec
+WANTLIB += Xrender c enet execinfo freetype intl m mbedtls mbedcrypto
+WANTLIB += mbedx509 mpcdec ogg opus opusfile png sndio theora theoradec
 WANTLIB += vorbis vorbisfile webp xcb z pcre2-32 vpx zstd
 
 COMPILER =		base-clang ports-gcc base-gcc

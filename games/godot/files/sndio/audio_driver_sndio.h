@@ -15,6 +15,7 @@ class AudioDriverSndio : public AudioDriver {
 
 	Vector<int32_t> samples_in;
 	Vector<int16_t> samples_out;
+	int was_active;
 
 	struct sio_hdl *handle;
 

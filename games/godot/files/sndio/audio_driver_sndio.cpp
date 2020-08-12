@@ -20,8 +20,8 @@ Error AudioDriverSndio::init() {
 	thread_exited = false;
 	exit_thread = false;
 	speaker_mode = SPEAKER_MODE_STEREO;
+	was_active = 0;
 
-	/* XXX: SIO_PLAY|SIO_REC */
 	handle = sio_open(SIO_DEVANY, SIO_PLAY, 0);
 	ERR_FAIL_COND_V(handle == NULL, ERR_CANT_OPEN);
 
@@ -30,22 +30,18 @@ Error AudioDriverSndio::init() {
 
 	par.bits = 16;
 	par.rate = GLOBAL_GET("audio/mix_rate");
-	par.appbufsz = 2205; // par.round ;
-	// par.appbufsz = closest_power_of_2(latency * par.rate / 1000) * channels;
 	printf("requested appbufsz: %u\n", par.appbufsz);
 
 	/*
 	 * XXX: require SIO_SYNC instead of SIO_IGNORE (the default) ?
 	 * what is the most sensible choice for a game?
 	 */
-	par.xrun = SIO_ERROR;
+	// par.xrun = SIO_ERROR;
 
 	if (!sio_setpar(handle, &par))
-		/* XXX: close the handle here? */
 		ERR_FAIL_COND_V(1, ERR_CANT_OPEN);
 
 	if (!sio_getpar(handle, &par))
-		/* XXX: close the handle here? */
 		ERR_FAIL_COND_V(1, ERR_CANT_OPEN);
 
 	mix_rate = par.rate;
@@ -58,10 +54,6 @@ Error AudioDriverSndio::init() {
 	int global_mix_rate = GLOBAL_GET("audio/mix_rate");
 	int global_output_latency = GLOBAL_GET("audio/output_latency");
 
-	printf("computed latency: %u\n", (par.bufsz/par.bps) * 1000 / mix_rate);
-	// GLOBAL_DEF("audio/latency", par.bufsz * 1000 / mix_rate);
-	// GLOBAL_DEF("audio/output_latency", 30);
-
 	printf("global mix rate:       %d\n", global_mix_rate);
 	printf("global output latency: %d\n", global_output_latency);
 	printf("mix rate:	       %d\n", mix_rate);
@@ -73,11 +65,6 @@ Error AudioDriverSndio::init() {
 	printf("par.bps		       %u\n", par.bps);
 	printf("par.bits	       %u\n", par.bits);
 
-	// if (!sio_start(handle)) {
-	// 	ERR_PRINTS("sio_start failed");
-	// 	exit_thread = true;
-	// }
-
 	mutex = Mutex::create();
 	thread = Thread::create(AudioDriverSndio::thread_func, this);
 
@@ -86,7 +73,6 @@ Error AudioDriverSndio::init() {
 
 void AudioDriverSndio::thread_func(void *p_udata) {
 	AudioDriverSndio *ad = (AudioDriverSndio*)p_udata;
-	int was_active = 0;
 
 	int nfds = sio_nfds(ad->handle);
 	struct pollfd *pfds;
@@ -99,47 +85,39 @@ void AudioDriverSndio::thread_func(void *p_udata) {
 	}
 
 	while (!ad->exit_thread) {
-
-		if (was_active) {
-			int nfds = sio_pollfd(ad->handle, pfds, POLLOUT);
+		if (ad->was_active) {
+			nfds = sio_pollfd(ad->handle, pfds, POLLOUT);
 			if (nfds > 0) {
-				// printf("before poll\n");
 				if (poll(pfds, nfds, -1) < 0) {
 					ERR_PRINTS("sndio: poll failed");
-					ad->active = false;
 					ad->exit_thread = true;
 					ad->stop_counting_ticks();
 					ad->unlock();
 					break;
 				}
-				// printf("after poll\n");
 			}
-			// revents = sio_revents(hdl, pfds);
+			// int revents = sio_revents(ad->handle, pfds);
 		}
 
 		ad->lock();
 		ad->start_counting_ticks();
 
 		if (!ad->active) {
-			if (was_active) {
-				was_active = 0;
+			if (ad->was_active) {
+				ad->was_active = 0;
 				sio_stop(ad->handle);
 			}
 
 			ad->stop_counting_ticks();
 			ad->unlock();
+			/* XXX: sleep a bit here? */
 			continue;
-
-			// for (size_t i = 0; i < ad->period_size * ad->channels; ++i) {
-			// 	ad->samples_out.write[i] = 0;
-			// }
 		} else {
-			if (!was_active) {
-				was_active = 1;
+			if (!ad->was_active) {
+				ad->was_active = 1;
 				sio_start(ad->handle);
 			}
 
-			// printf("getting fresh audio data\n");
 			ad->audio_server_process(ad->period_size, ad->samples_in.ptrw());
 
 			for (size_t i = 0; i < ad->period_size*ad->channels; ++i) {
@@ -147,29 +125,16 @@ void AudioDriverSndio::thread_func(void *p_udata) {
 			}
 		}
 
-		// ad->stop_counting_ticks();
-		// ad->unlock();
-
-		// ad->lock();
-		// ad->start_counting_ticks();
-
 		size_t left = ad->period_size * ad->channels * sizeof(int16_t);
 		size_t wrote = 0;
 
 		while (left != 0 && !ad->exit_thread) {
-			// if (true) {
-			// 	OS::get_singleton()->delay_usec(1000);
-			// 	break;
-			// }
-
 			const uint8_t *src = (const uint8_t*)ad->samples_out.ptr();
 			size_t w = sio_write(ad->handle, (void*)(src + wrote), left);
 
-			if (w == 0) {
+			if (w == 0 && sio_eof(ad->handle)) {
 				ERR_PRINTS("sndio: fatal error");
-				ad->active = false;
 				ad->exit_thread = true;
-				break;
 			} else {
 				wrote += w;
 				left  -= w;
@@ -212,23 +177,22 @@ void AudioDriverSndio::unlock() {
 void AudioDriverSndio::finish() {
 	printf("sndio: finish\n");
 
-	if (handle) {
-		sio_close(handle);
-		handle = NULL;
+	if (thread) {
+		exit_thread = true;
+		Thread::wait_to_finish(thread);
+
+		memdelete(thread);
+		thread = NULL;
 	}
-
-	if (!thread)
-		return;
-
-	exit_thread = true;
-	Thread::wait_to_finish(thread);
-
-	memdelete(thread);
-	thread = NULL;
 
 	if (mutex) {
 		memdelete(mutex);
 		mutex = NULL;
+	}
+
+	if (handle) {
+		sio_close(handle);
+		handle = NULL;
 	}
 }
 
