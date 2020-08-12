@@ -12,6 +12,7 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
+#include <poll.h>
 #include <stdio.h>
 
 Error AudioDriverSndio::init() {
@@ -29,7 +30,7 @@ Error AudioDriverSndio::init() {
 
 	par.bits = 16;
 	par.rate = GLOBAL_GET("audio/mix_rate");
-	par.appbufsz = par.round ;
+	par.appbufsz = 2205; // par.round ;
 	// par.appbufsz = closest_power_of_2(latency * par.rate / 1000) * channels;
 	printf("requested appbufsz: %u\n", par.appbufsz);
 
@@ -72,10 +73,10 @@ Error AudioDriverSndio::init() {
 	printf("par.bps		       %u\n", par.bps);
 	printf("par.bits	       %u\n", par.bits);
 
-	if (!sio_start(handle)) {
-		ERR_PRINTS("sio_start failed");
-		exit_thread = true;
-	}
+	// if (!sio_start(handle)) {
+	// 	ERR_PRINTS("sio_start failed");
+	// 	exit_thread = true;
+	// }
 
 	mutex = Mutex::create();
 	thread = Thread::create(AudioDriverSndio::thread_func, this);
@@ -85,17 +86,60 @@ Error AudioDriverSndio::init() {
 
 void AudioDriverSndio::thread_func(void *p_udata) {
 	AudioDriverSndio *ad = (AudioDriverSndio*)p_udata;
+	int was_active = 0;
+
+	int nfds = sio_nfds(ad->handle);
+	struct pollfd *pfds;
+	if ((pfds = (struct pollfd*)calloc(sizeof(*pfds), nfds)) == NULL) {
+		ERR_PRINTS("cannot allocate memory");
+		ad->active = false;
+		ad->exit_thread = true;
+		ad->thread_exited = true;
+		return;
+	}
 
 	while (!ad->exit_thread) {
+
+		if (was_active) {
+			int nfds = sio_pollfd(ad->handle, pfds, POLLOUT);
+			if (nfds > 0) {
+				// printf("before poll\n");
+				if (poll(pfds, nfds, -1) < 0) {
+					ERR_PRINTS("sndio: poll failed");
+					ad->active = false;
+					ad->exit_thread = true;
+					ad->stop_counting_ticks();
+					ad->unlock();
+					break;
+				}
+				// printf("after poll\n");
+			}
+			// revents = sio_revents(hdl, pfds);
+		}
 
 		ad->lock();
 		ad->start_counting_ticks();
 
 		if (!ad->active) {
-			for (size_t i = 0; i < ad->period_size * ad->channels; ++i) {
-				ad->samples_out.write[i] = 0;
+			if (was_active) {
+				was_active = 0;
+				sio_stop(ad->handle);
 			}
+
+			ad->stop_counting_ticks();
+			ad->unlock();
+			continue;
+
+			// for (size_t i = 0; i < ad->period_size * ad->channels; ++i) {
+			// 	ad->samples_out.write[i] = 0;
+			// }
 		} else {
+			if (!was_active) {
+				was_active = 1;
+				sio_start(ad->handle);
+			}
+
+			// printf("getting fresh audio data\n");
 			ad->audio_server_process(ad->period_size, ad->samples_in.ptrw());
 
 			for (size_t i = 0; i < ad->period_size*ad->channels; ++i) {
@@ -103,10 +147,21 @@ void AudioDriverSndio::thread_func(void *p_udata) {
 			}
 		}
 
+		// ad->stop_counting_ticks();
+		// ad->unlock();
+
+		// ad->lock();
+		// ad->start_counting_ticks();
+
 		size_t left = ad->period_size * ad->channels * sizeof(int16_t);
 		size_t wrote = 0;
 
 		while (left != 0 && !ad->exit_thread) {
+			// if (true) {
+			// 	OS::get_singleton()->delay_usec(1000);
+			// 	break;
+			// }
+
 			const uint8_t *src = (const uint8_t*)ad->samples_out.ptr();
 			size_t w = sio_write(ad->handle, (void*)(src + wrote), left);
 
@@ -125,10 +180,12 @@ void AudioDriverSndio::thread_func(void *p_udata) {
 		ad->unlock();
 	}
 
+	printf("sndio end of loop\n");
 	ad->thread_exited = true;
 }
 
 void AudioDriverSndio::start() {
+	printf("sndio: start\n");
 	active = true;
 }
 
@@ -153,9 +210,12 @@ void AudioDriverSndio::unlock() {
 }
 
 void AudioDriverSndio::finish() {
-	if (handle)
+	printf("sndio: finish\n");
+
+	if (handle) {
 		sio_close(handle);
-	handle = NULL;
+		handle = NULL;
+	}
 
 	if (!thread)
 		return;
