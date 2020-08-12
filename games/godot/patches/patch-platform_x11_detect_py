@@ -1,6 +1,6 @@
 $OpenBSD: patch-platform_x11_detect_py,v 1.2 2020/07/19 13:02:38 thfr Exp $
 
-aremove hardcoded -O2, found by bcallah@ and add sndio
+aremove hardcoded -O2, found by bcallah@. Add sndio
 
 Index: platform/x11/detect.py
 --- platform/x11/detect.py.orig
@@ -27,7 +27,7 @@ Index: platform/x11/detect.py
          env.Prepend(CPPDEFINES=["DEBUG_ENABLED"])
  
          if env["debug_symbols"] == "yes":
-@@ -302,3 +293,7 @@ def configure(env):
+@@ -302,6 +293,10 @@ def configure(env):
          env.ParseConfig("pkg-config alsa --libs")
      else:
          print("ALSA libraries not found, disabling driver")
@@ -35,6 +35,6 @@ Index: platform/x11/detect.py
 +    print("Enabling sndio")
 +    env.Append(CPPDEFINES=["SNDIO_ENABLED"])
 +    env.Append(LDFLAGS=["-lsndio"])
-
+ 
      if env["pulseaudio"]:
          if os.system("pkg-config --exists libpulse") == 0:  # 0 means found
