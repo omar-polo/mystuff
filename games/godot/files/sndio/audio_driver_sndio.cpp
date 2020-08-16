@@ -71,8 +71,6 @@ void AudioDriverSndio::thread_func(void *p_udata) {
 				if (poll(pfds, nfds, -1) < 0) {
 					ERR_PRINTS("sndio: poll failed");
 					ad->exit_thread = true;
-					ad->stop_counting_ticks();
-					ad->unlock();
 					break;
 				}
 			}
