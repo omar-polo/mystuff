@@ -17,10 +17,11 @@ lib/cmake/Td/TdConfigVersion.cmake
 lib/cmake/Td/TdTargets${MODCMAKE_BUILD_SUFFIX}
 lib/cmake/Td/TdTargets.cmake
 @static-lib lib/libtdactor.a
+@static-lib lib/libtdapi.a
 @static-lib lib/libtdclient.a
 @static-lib lib/libtdcore.a
 @static-lib lib/libtddb.a
-lib/libtdjson.so.1.6.0
+@lib lib/libtdjson.so.${LIBtdjson_VERSION}
 @static-lib lib/libtdjson_private.a
 @static-lib lib/libtdjson_static.a
 @static-lib lib/libtdnet.a
