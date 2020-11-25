@@ -1,0 +1,4 @@
+opustags is a tool to view and edit Ogg Opus comments.  It is designed
+to be fast and as conservative as possible: no under-the-cover
+operation like writing "edited with opustags" or timestamp tagging
+will ever be performed.
