@@ -27,3 +27,14 @@ lib/cmake/Td/TdTargets.cmake
 @static-lib lib/libtdnet.a
 @static-lib lib/libtdsqlite.a
 @static-lib lib/libtdutils.a
+lib/pkgconfig/tdactor.pc
+lib/pkgconfig/tdapi.pc
+lib/pkgconfig/tdclient.pc
+lib/pkgconfig/tdcore.pc
+lib/pkgconfig/tddb.pc
+lib/pkgconfig/tdjson.pc
+lib/pkgconfig/tdjson_private.pc
+lib/pkgconfig/tdjson_static.pc
+lib/pkgconfig/tdnet.pc
+lib/pkgconfig/tdsqlite.pc
+lib/pkgconfig/tdutils.pc

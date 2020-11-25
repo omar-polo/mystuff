@@ -2,9 +2,9 @@
 
 COMMENT =	cross-platform library for building Telegram clients
 
-V =		83c9f5180bf9738df2667841ed0c4df9ebeaec40
+V =		7a59b3d2b36869b11fb1f4f43e678856a26f8deb
 DISTNAME =	td-${V}
-PKGNAME =	td-1.6beta6
+PKGNAME =	td-1.6.9
 
 GH_ACCOUNT =	tdlib
 GH_PROJECT =	td
