@@ -19,6 +19,8 @@ PERMIT_PACKAGE = Yes
 
 MODULES =	devel/cmake
 
+BUILD_DEPENDS =	devel/gperf
+
 COMPILER=base-clang ports-gcc
 
 WANTLIB += ${COMPILER_LIBCXX} crypto m ssl z
