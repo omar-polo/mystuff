@@ -3,7 +3,7 @@ $OpenBSD$
 Index: CMakeLists.txt
 --- CMakeLists.txt.orig
 +++ CMakeLists.txt
-@@ -75,8 +75,8 @@ if (POLICY CMP0069)
+@@ -63,8 +63,8 @@ if (POLICY CMP0069)
  endif()
  
  # Configure CCache if available
