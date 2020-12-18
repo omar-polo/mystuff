@@ -2,7 +2,7 @@
 
 COMMENT =	python wrapper for Telegram tdlib
 
-MODPY_EGG_VERSION =	0.13.0
+MODPY_EGG_VERSION =	0.14.0
 
 DISTNAME =	python-telegram-${MODPY_EGG_VERSION}
 PKGNAME =	${DISTNAME:S/^python-/py-/}
