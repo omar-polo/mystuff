@@ -6,11 +6,16 @@
 
 COMMENT =	cross-platform library for building Telegram clients
 
+# XXX: because of GH_COMMIT
+PKGNAME =	tdlib-1.7.1
+DISTNAME =	tdlib-${GH_COMMIT}
+
 GH_ACCOUNT =	tdlib
 GH_PROJECT =	td
-GH_TAGNAME =	v1.7.0		# XXX: keep in sync with COMMIT below
+#GH_TAGNAME =	v1.7.0		# XXX: keep in sync with COMMIT below
+GH_COMMIT =	3a657d9072b324aad1143c6abe20a802f3b92cd5
 
-SHARED_LIBS +=	tdjson	0.0	# 1.7.0
+SHARED_LIBS +=	tdjson	0.0	# 1.7.1
 CATEGORIES =	net
 
 MAINTAINER =	Omar Polo <op@omarpolo.com>
@@ -27,7 +32,7 @@ COMPILER =	base-clang ports-gcc
 
 WANTLIB +=	${COMPILER_LIBCXX} crypto m ssl z
 
-COMMIT =	eb80924dad30af4e6d8385d058bb7e847174df5e
+COMMIT =	3a657d9072b324aad1143c6abe20a802f3b92cd5
 SUBST_VARS +=	COMMIT
 
 post-patch:
