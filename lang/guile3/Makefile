@@ -1,12 +1,9 @@
-# $OpenBSD: Makefile,v 1.27 2020/08/03 07:27:46 jasper Exp $
-
-# When updating, check that x11/gnome/aisleriot MODGNOME_CPPFLAGS references the
-# proper guile2 includes directory
+# $OpenBSD$
 
 COMMENT=		GNU's Ubiquitous Intelligent Language for Extension
 # '
 
-VERSION=		3.0.4
+VERSION=		3.0.5
 DISTNAME=		guile-${VERSION}
 PKGNAME=		guile3-${VERSION}
 V=			${VERSION:R}
@@ -16,7 +13,7 @@ CATEGORIES=		lang
 
 HOMEPAGE=		https://www.gnu.org/software/guile/
 
-SHARED_LIBS +=  guile-3.0            0.0      # 3.0.4
+SHARED_LIBS +=  guile-3.0            0.0      # 3.0.5
 
 # GPLv3, LGPLv3
 PERMIT_PACKAGE=		Yes
@@ -43,12 +40,8 @@ LIB_DEPENDS=		converters/libunistring \
 CONFIGURE_STYLE=	gnu
 CONFIGURE_ENV=		CPPFLAGS="-I${LOCALBASE}/include" \
 			LDFLAGS="-L${LOCALBASE}/lib"
-CONFIGURE_ARGS=		--program-suffix=${V} \
-			--enable-jit=no
-
-# Needed because otherwise regress tests won't build:
-# warning: format '%ji' expects type 'intmax_t', but argument 4 has type 'scm_t_intmax'
-CONFIGURE_ARGS +=	--disable-error-on-warning
+CONFIGURE_ARGS=		--enable-jit=no \
+			--program-suffix=${V}
 
 # powerpc: Prevent "Segmentation fault (core dumped)" during build.
 post-patch:

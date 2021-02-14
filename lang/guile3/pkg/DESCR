@@ -1,4 +1,4 @@
-This is version 2.0 of Guile, Project GNU's extension language library.
+This is version 3.0 of Guile, Project GNU's extension language library.
 Guile is an implementation of the Scheme programming language, packaged
 as a library that can be linked into applications to give them their own
 extension language.  Guile supports other languages as well, giving

@@ -1,5 +1,4 @@
-@comment $OpenBSD: PLIST,v 1.9 2020/07/05 09:44:08 espie Exp $
-@conflict r5rs-*
+@comment $OpenBSD: PLIST,v$
 bin/guild${V}
 bin/guile-config${V}
 bin/guile-snarf${V}
@@ -121,7 +120,6 @@ include/guile/${V}/libguile/symbols.h
 include/guile/${V}/libguile/tags.h
 include/guile/${V}/libguile/threads.h
 include/guile/${V}/libguile/throw.h
-include/guile/${V}/libguile/trees.h
 include/guile/${V}/libguile/unicode.h
 include/guile/${V}/libguile/uniform.h
 include/guile/${V}/libguile/validate.h
@@ -139,7 +137,7 @@ include/guile/${V}/libguile/weak-vector.h
 include/guile/${V}/readline.h
 @info info/guile.info
 @info info/r5rs.info
-@comment lib/charset.alias
+lib/charset.alias
 lib/guile/
 lib/guile/${V}/
 lib/guile/${V}/ccache/
@@ -154,6 +152,7 @@ lib/guile/${V}/ccache/ice-9/calling.go
 lib/guile/${V}/ccache/ice-9/command-line.go
 lib/guile/${V}/ccache/ice-9/common-list.go
 lib/guile/${V}/ccache/ice-9/control.go
+lib/guile/${V}/ccache/ice-9/copy-tree.go
 lib/guile/${V}/ccache/ice-9/curried-definitions.go
 lib/guile/${V}/ccache/ice-9/deprecated.go
 lib/guile/${V}/ccache/ice-9/documentation.go
@@ -258,6 +257,7 @@ lib/guile/${V}/ccache/language/cps/spec.go
 lib/guile/${V}/ccache/language/cps/specialize-numbers.go
 lib/guile/${V}/ccache/language/cps/specialize-primcalls.go
 lib/guile/${V}/ccache/language/cps/split-rec.go
+lib/guile/${V}/ccache/language/cps/switch.go
 lib/guile/${V}/ccache/language/cps/type-checks.go
 lib/guile/${V}/ccache/language/cps/type-fold.go
 lib/guile/${V}/ccache/language/cps/types.go
@@ -525,6 +525,7 @@ share/guile/${V}/ice-9/calling.scm
 share/guile/${V}/ice-9/command-line.scm
 share/guile/${V}/ice-9/common-list.scm
 share/guile/${V}/ice-9/control.scm
+share/guile/${V}/ice-9/copy-tree.scm
 share/guile/${V}/ice-9/curried-definitions.scm
 share/guile/${V}/ice-9/deprecated.scm
 share/guile/${V}/ice-9/documentation.scm
@@ -634,6 +635,7 @@ share/guile/${V}/language/cps/spec.scm
 share/guile/${V}/language/cps/specialize-numbers.scm
 share/guile/${V}/language/cps/specialize-primcalls.scm
 share/guile/${V}/language/cps/split-rec.scm
+share/guile/${V}/language/cps/switch.scm
 share/guile/${V}/language/cps/type-checks.scm
 share/guile/${V}/language/cps/type-fold.scm
 share/guile/${V}/language/cps/types.scm
@@ -893,5 +895,3 @@ share/guile/${V}/web/server/http.scm
 share/guile/${V}/web/uri.scm
 share/guile/site/
 share/guile/site/${V}/
-@exec GUILE_WARN_DEPRECATED=no guile${V} --fresh-auto-compile --no-auto-compile -c "(use-modules (ice-9 slib)) (require 'new-catalog)"
-@unexec-delete rm %D/share/guile/site/${V}/slibcat
