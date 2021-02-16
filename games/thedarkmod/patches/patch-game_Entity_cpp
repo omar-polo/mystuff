@@ -1,0 +1,16 @@
+$OpenBSD$
+
+float.h needed for definition of FLT_MAX
+
+Index: game/Entity.cpp
+--- game/Entity.cpp.orig
++++ game/Entity.cpp
+@@ -33,6 +33,8 @@
+ #include "Objectives/MissionData.h"
+ #include <algorithm>
+ 
++#include <float.h>		// for FLT_MAX
++
+ /*
+ ===============================================================================
+ 

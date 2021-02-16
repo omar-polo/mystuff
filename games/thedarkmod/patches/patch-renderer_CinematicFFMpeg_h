@@ -1,0 +1,16 @@
+$OpenBSD$
+
+include float.h because DBL_MAX is used
+
+Index: renderer/CinematicFFMpeg.h
+--- renderer/CinematicFFMpeg.h.orig
++++ renderer/CinematicFFMpeg.h
+@@ -15,6 +15,8 @@ Project: The Dark Mod (http://www.thedarkmod.com/)
+ 
+ #pragma once
+ 
++#include <float.h> /* for DBL_MAX */
++
+ #include "Cinematic.h"
+ 
+ extern "C" {

@@ -1,0 +1,16 @@
+$OpenBSD$
+
+Index: framework/CmdSystem.cpp
+--- framework/CmdSystem.cpp.orig
++++ framework/CmdSystem.cpp
+@@ -461,8 +461,10 @@ void idCmdSystemLocal::ExecuteTokenizedString( const i
+ 		return;		// no tokens
+ 	}
+ 
++	common->Printf("before foreach commands\n");
+ 	// check registered command functions	
+ 	for ( prev = &commands; *prev; prev = &cmd->next ) {
++		common->Printf("checking `%s' against `%s'\n", args.Argv(0), cmd->name);
+ 		cmd = *prev;
+ 		if ( idStr::Icmp( args.Argv( 0 ), cmd->name ) == 0 ) {
+ 			// rearrange the links so that the command will be

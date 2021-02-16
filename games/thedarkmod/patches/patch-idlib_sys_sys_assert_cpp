@@ -1,0 +1,15 @@
+$OpenBSD$
+
+include signal.h for raise(3)
+
+Index: idlib/sys/sys_assert.cpp
+--- idlib/sys/sys_assert.cpp.orig
++++ idlib/sys/sys_assert.cpp
+@@ -27,6 +27,7 @@ If you have questions concerning this license or the a
+ */
+ #pragma hdrstop
+ #include "precompiled.h"
++#include <signal.h>
+ 
+ /*
+ ================================================================================================

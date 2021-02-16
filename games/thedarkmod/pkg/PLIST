@@ -1,0 +1,6 @@
+@comment $OpenBSD: PLIST,v$
+bin/tdm_update
+bin/thedarkmod
+share/darkmod/
+share/darkmod/Darkmod.cfg
+@bin share/darkmod/thedarkmod

@@ -1,0 +1,136 @@
+$OpenBSD$
+
+- hardcode SVNVERSION 
+- don't add -std=c++14 to compiler flags since some sources are C
+  files.
+- drop -ldl: already in libc
+- drop -lstdc++fs: doesn't seem to be actually required
+- use pkg-config to find deps (i.e. don't use bundled libs)
+
+Index: CMakeLists.txt
+--- CMakeLists.txt.orig
++++ CMakeLists.txt
+@@ -11,12 +11,12 @@ endif()
+ # find ordinary cmake includes
+ list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/sys/cmake")
+ # find third-party package modules
+-list(PREPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/ThirdParty/cmake_find_package")
++# list(PREPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/ThirdParty/cmake_find_package")
+ 
+ include(CMakeDependentOption)
+ include(ucm)
+ include(PrecompiledHeader)
+-include(SvnVersion)
++# include(SvnVersion)
+ 
+ project(TheDarkMod)
+ 
+@@ -47,7 +47,7 @@ if (UNIX)
+ 			-fmessage-length=0
+ 			-fvisibility=hidden
+ 			-fno-unsafe-math-optimizations
+-			-std=c++14
++			# -std=c++14
+ 			-msse2
+ 	)
+ 	# TODO: do we really want to keep using this
+@@ -88,7 +88,7 @@ endif ()
+ 
+ add_executable(TheDarkMod)
+ 
+-get_svn_revision(SVNVERSION)
++set(SVNVERSION, "2.0.9")
+ configure_file("idlib/svnversion.cmake.h" "${PROJECT_SOURCE_DIR}/idlib/svnversion.h" @ONLY)
+ 
+ # gather list of source files
+@@ -182,8 +182,8 @@ if (THIRDPARTY_PLATFORM_OVERRIDE)
+ elseif (UNIX)
+ 	if (CMAKE_SIZEOF_VOID_P EQUAL 8)
+ 		# ffmpeg dep was compiled without -fPIC, so need to disable on 64bit builds
+-		set_target_properties(TheDarkMod PROPERTIES POSITION_INDEPENDENT_CODE OFF)
+-		set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -no-pie")
++                # set_target_properties(TheDarkMod PROPERTIES POSITION_INDEPENDENT_CODE OFF)
++		# set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -no-pie")
+ 		set_target_properties(TheDarkMod PROPERTIES OUTPUT_NAME "thedarkmod.x64")
+ 	else ()
+ 		set_target_properties(TheDarkMod PROPERTIES OUTPUT_NAME "thedarkmod.x86")
+@@ -197,25 +197,35 @@ elseif (MSVC)
+ endif ()
+ ucm_set_runtime(STATIC)
+ 
+-find_package(zlib REQUIRED)
+-find_package(libcurl REQUIRED)
+-find_package(openal REQUIRED)
+-find_package(ogg REQUIRED)
+-find_package(vorbis REQUIRED)
+-find_package(devil REQUIRED)
+-find_package(libjpeg REQUIRED)
+-find_package(ffmpeg REQUIRED)
+-find_package(pugixml REQUIRED)
+-find_package(libpng REQUIRED)
+-find_package(mbedtls REQUIRED)
+-find_package(glfw REQUIRED)
++INCLUDE(FindPkgConfig)
+ 
++# XXX: this doesn't work, dunno why
++#find_package(QuaZip5)
++set(QUAZIP_INCLUDE_DIRS "/usr/local/include")
++set(QUAZIP_LIBRARIES "quazip5")
++
++#find_package(zlib REQUIRED)
++#pkg_check_modules(zlib REQUIRED zlib)
++pkg_check_modules(libcurl REQUIRED libcurl)
++pkg_check_modules(openal REQUIRED openal)
++pkg_check_modules(ogg REQUIRED ogg)
++pkg_check_modules(vorbis REQUIRED vorbis vorbisfile)
++pkg_check_modules(devil REQUIRED IL)
++# find_package(libjpeg REQUIRED)
++pkg_check_modules(libjpeg REQUIRED libjpeg)
++pkg_check_modules(ffmpeg REQUIRED libavcodec libavdevice libavfilter libavformat libavresample libavutil libswresample libswscale)
++pkg_check_modules(libpng REQUIRED libpng)
++set(mbedtls_INCLUDE_DIRS "/usr/local/include/mbedtls")
++set(mbedttls_LIBRARIES "mbedtls mbedx509 mbedcrypto")
++pkg_check_modules(glfw REQUIRED glfw3)
++set(pugixml_LIBRARIES "pugixml")
++
+ include_directories(
+ 		"${PROJECT_SOURCE_DIR}"
+ 		"${PROJECT_SOURCE_DIR}/idlib"
+ 		"${PROJECT_SOURCE_DIR}/framework"
+ 		"${PROJECT_SOURCE_DIR}/ThirdParty/artefacts/doctest/include"
+-		${zlib_INCLUDE_DIRS}
++		${QUAZIP_INCLUDE_DIRS}
+ 		${libcurl_INCLUDE_DIRS}
+ 		${openal_INCLUDE_DIRS}
+ 		${ogg_INCLUDE_DIRS}
+@@ -230,25 +240,26 @@ include_directories(
+ )
+ 
+ target_link_libraries(TheDarkMod
+-		${zlib_LIBRARIES}
++		${QUAZIP_LIBRARIES}
+ 		${libcurl_LIBRARIES}
+ 		${openal_LIBRARIES}
+-		${vorbis_LIBRARIES}
+ 		${ogg_LIBRARIES}
++		${vorbis_LIBRARIES}
+ 		${devil_LIBRARIES}
+ 		${libjpeg_LIBRARIES}
+ 		${ffmpeg_LIBRARIES}
++                ${pugixml_LIBRARIES}
+ 		${libpng_LIBRARIES}
+ 		${mbedtls_LIBRARIES}
+ 		${glfw_LIBRARIES}
+ )
+-target_link_libraries(TheDarkMod debug ${pugixml_LIBRARIES_D} optimized ${pugixml_LIBRARIES})
++# target_link_libraries(TheDarkMod ${pugixml_LIBRARIES_D} ${pugixml_LIBRARIES})
+ 
+ if (WIN32)
+ 	target_link_libraries(TheDarkMod ws2_32 iphlpapi winmm bcrypt dinput8 dbghelp)
+ 	set_target_properties(TheDarkMod PROPERTIES WIN32_EXECUTABLE TRUE)
+ elseif (UNIX)
+-	target_link_libraries(TheDarkMod pthread dl stdc++fs X11 Xext Xxf86vm)
++	target_link_libraries(TheDarkMod pthread X11 Xext Xxf86vm)
+ 	# strip debug symbols from executable and put them into a separate symbols file
+ 	add_custom_command(
+ 			TARGET TheDarkMod POST_BUILD

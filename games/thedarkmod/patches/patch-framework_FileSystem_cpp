@@ -1,0 +1,34 @@
+$OpenBSD$
+
+use minizip from ports
+
+Index: framework/FileSystem.cpp
+--- framework/FileSystem.cpp.orig
++++ framework/FileSystem.cpp
+@@ -18,7 +18,7 @@
+ 
+ 
+ 
+-#include "unzip.h"
++#include <quazip5/unzip.h>
+ #include "minizip/minizip_extra.h"	//unzReOpen
+ //stgatilov: for pk4 repacking
+ #include "zip.h"
+@@ -1169,7 +1169,7 @@ bool RepackPK4(unzFile uf, const char *srcZipfile) {
+ 	idStr tempZipfileB = idStr(srcZipfile) + ".tmp";
+ 	const char *tempZipfile = tempZipfileB.c_str();
+ 	remove(tempZipfile);
+-	zipFile zf = zipOpen(tempZipfile, APPEND_STATUS_CREATE);
++	zipFile zf = zipOpen((voidpf)tempZipfile, APPEND_STATUS_CREATE);
+ 	SAFECALL(zf == NULL, "Cannot create %s", tempZipfile);
+ 
+ 	//open old pk4 file
+@@ -1260,7 +1260,7 @@ pack_t *idFileSystemLocal::LoadZipFile( const char *zi
+ 
+ 	fs_numHeaderLongs = 0;
+ 
+-	uf = unzOpen( zipfile );
++	uf = unzOpen( (voidpf)zipfile );
+ 	err = unzGetGlobalInfo64( uf, &gi );
+ 
+ 	if ( err != UNZ_OK ) {

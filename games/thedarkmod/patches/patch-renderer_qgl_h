@@ -1,0 +1,16 @@
+$OpenBSD$
+
+account for OpenBSD
+
+Index: renderer/qgl.h
+--- renderer/qgl.h.orig
++++ renderer/qgl.h
+@@ -41,7 +41,7 @@
+ #include "glad_wgl.h"
+ #endif
+ 
+-#ifdef __linux__
++#if defined(__linux__) || defined(__OpenBSD__)
+ // Versions:
+ #define GLX_VERSION_1_0 1
+ #define GLX_VERSION_1_1 1

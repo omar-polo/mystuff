@@ -1,0 +1,20 @@
+$OpenBSD$
+
+replace std::quick_exit with std::_Exit, as gleaned from games/wesnoth
+patch for loading_screen.cpp
+
+Index: sys/posix/posix_main.cpp
+--- sys/posix/posix_main.cpp.orig
++++ sys/posix/posix_main.cpp
+@@ -85,9 +85,9 @@ void Posix_Exit(int ret) {
+ 	// in case of signal, handler tries a common->Quit
+ 	// we use set_exit to maintain a correct exit code
+ 	if ( set_exit ) {
+-		std::quick_exit( set_exit );
++		std::_Exit( set_exit );
+ 	}
+-	std::quick_exit( ret );
++	std::_Exit( ret );
+ }
+ 
+ /*

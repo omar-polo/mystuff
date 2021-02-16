@@ -1,0 +1,16 @@
+$OpenBSD$
+
+include float.h for FLT_EPSILON
+
+Index: renderer/ParticleSystem.cpp
+--- renderer/ParticleSystem.cpp.orig
++++ renderer/ParticleSystem.cpp
+@@ -1,7 +1,7 @@
+ #include "precompiled.h"
+ #include "ParticleSystem.h"
+ #include "tr_local.h"
+-
++#include <float.h>		// for FLT_EPSILON
+ 
+ #define PIN(type) const type &
+ #define POUT(type) type &

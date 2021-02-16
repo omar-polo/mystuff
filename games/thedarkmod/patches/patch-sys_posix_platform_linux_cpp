@@ -1,0 +1,27 @@
+$OpenBSD$
+
+fix executable path
+
+Index: sys/posix/platform_linux.cpp
+--- sys/posix/platform_linux.cpp.orig
++++ sys/posix/platform_linux.cpp
+@@ -65,17 +65,8 @@ const char* Sys_EXEPath()
+ 	static char	buf[ 1024 ];
+ 	idStr		linkpath;
+ 	int			len;
+-	
+-	buf[ 0 ] = '\0';
+-	sprintf( linkpath, "/proc/%d/exe", getpid() );
+-	len = readlink( linkpath.c_str(), buf, sizeof( buf ) );
+-	if( len == -1 )
+-	{
+-		Sys_Printf( "couldn't stat exe path link %s\n", linkpath.c_str() );
+-		// RB: fixed array subscript is below array bounds
+-		buf[ 0 ] = '\0';
+-		// RB end
+-	}
++
++	snprintf(buf, sizeof(buf), "/usr/local/share/thedarkmod/darkmod");
+ 	return buf;
+ }
+ 

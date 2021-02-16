@@ -1,0 +1,15 @@
+$OpenBSD$
+
+float.h needed for definition of FLT_MAX
+
+Index: game/physics/Physics_Player.cpp
+--- game/physics/Physics_Player.cpp.orig
++++ game/physics/Physics_Player.cpp
+@@ -23,6 +23,7 @@
+ #include "../BinaryFrobMover.h"
+ #include "../FrobDoor.h"
+ #include "Force_Push.h"
++#include <float.h>	/* for FLT_MAX */
+ 
+ CLASS_DECLARATION( idPhysics_Actor, idPhysics_Player )
+ END_CLASS

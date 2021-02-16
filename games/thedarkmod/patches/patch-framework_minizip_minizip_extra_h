@@ -1,0 +1,13 @@
+$OpenBSD$
+
+Index: framework/minizip/minizip_extra.h
+--- framework/minizip/minizip_extra.h.orig
++++ framework/minizip/minizip_extra.h
+@@ -1,6 +1,6 @@
+ #pragma once
+ 
+-#include "unzip.h"
++#include <quazip5/zip.h>
+ 
+ #ifdef __cplusplus
+ extern "C" {

@@ -1,0 +1,15 @@
+$OpenBSD$
+
+use minizip from ports.
+
+Index: framework/minizip/minizip_private.h
+--- framework/minizip/minizip_private.h.orig
++++ framework/minizip/minizip_private.h
+@@ -1,6 +1,6 @@
+ #pragma once
+ 
+-#include "unzip.h"
++#include <quazip5/ioapi.h>
+ #include <string.h>
+ 
+ #ifdef __cplusplus

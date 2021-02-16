@@ -1,0 +1,53 @@
+$OpenBSD$
+
+work around execinfo
+
+Index: sys/linux/main.cpp
+--- sys/linux/main.cpp.orig
++++ sys/linux/main.cpp
+@@ -23,7 +23,6 @@
+ #include <sys/stat.h>
+ #include <sys/types.h>
+ #include <fcntl.h>
+-#include <execinfo.h>
+ #include <stdio.h>
+ #include <tests/TestRun.h>
+ 
+@@ -370,18 +369,21 @@ stgatilov: stacktrace
+ */
+ 
+ void Sys_CaptureStackTrace(int ignoreFrames, uint8_t *data, int &len) {
++	/*
+ 	int cnt = backtrace((void**)data, len / sizeof(void*));
+ 	if (ignoreFrames > cnt)
+ 		ignoreFrames = cnt;
+ 	len = (cnt - ignoreFrames) * sizeof(void*);
+ 	memmove(data, data + ignoreFrames * sizeof(void*), len);
++	*/
+ }
+ 
+ int Sys_GetStackTraceFramesCount(uint8_t *data, int len) {
+-	return len / sizeof(void*);
++	return 0;
+ }
+ 
+ void Sys_DecodeStackTrace(uint8_t *data, int len, debugStackFrame_t *frames) {
++	/*
+ 	//interpret input blob as array of addresses
+ 	void **addresses = (void**)data;
+ 	int framesCount = Sys_GetStackTraceFramesCount(data, len);
+@@ -469,6 +471,7 @@ void Sys_DecodeStackTrace(uint8_t *data, int len, debu
+ 
+ 	//note: strings must not be freed
+ 	free(messages);
++	*/
+ }
+ 
+ 
+@@ -494,4 +497,4 @@ void abrt_func( mcheck_status status ) {
+ 	common->Quit();
+ }
+ 
+-#endif
+\ No newline at end of file
++#endif

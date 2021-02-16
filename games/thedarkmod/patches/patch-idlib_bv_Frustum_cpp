@@ -1,0 +1,16 @@
+$OpenBSD$
+
+account for OpenBSD
+
+Index: idlib/bv/Frustum.cpp
+--- idlib/bv/Frustum.cpp.orig
++++ idlib/bv/Frustum.cpp
+@@ -2035,7 +2035,7 @@ bool idFrustum::ProjectionBounds( const idBounds &boun
+ 	return ProjectionBounds( idBox( bounds, vec3_origin, mat3_identity ), projectionBounds );
+ }
+ 
+-#if !defined(__linux__) && !defined(MACOS_X)
++#if !defined(__linux__) && !defined(MACOS_X) && !defined(__OpenBSD__)
+ 
+ /*
+ ============
