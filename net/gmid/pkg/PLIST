@@ -1,0 +1,4 @@
+@comment $OpenBSD: PLIST,v$
+@rcscript ${RCDIR}/gmid
+@bin bin/gmid
+@man man/man1/gmid.1
