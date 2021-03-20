@@ -2,14 +2,9 @@
 
 COMMENT =	simple and secure Gemini server
 
-# only because of GH_COMMIT
-PKGNAME =	gmid-1.6beta
-DISTNAME =	gmid
-
 GH_ACCOUNT =	omar-polo
 GH_PROJECT =	gmid
-#GH_TAGNAME =	v1.6
-GH_COMMIT =	fda7b99fc7f19b04eced114983268cfe3eb46c99
+GH_TAGNAME =	v1.6
 
 CATEGORIES =	net
 
