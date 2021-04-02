@@ -16,7 +16,7 @@ MAINTAINER =		Omar Polo <op@omarpolo.com>
 PERMIT_PACKAGE =	Yes
 
 # uses pledge()
-
+# uses unveil()
 WANTLIB += c crypto event ssl tls util
 
 CONFIGURE_STYLE =	simple
