@@ -4,7 +4,7 @@ COMMENT =	simple and secure Gemini server
 
 GH_ACCOUNT =	omar-polo
 GH_PROJECT =	gmid
-GH_TAGNAME =	v1.6
+GH_TAGNAME =	v1.6.1
 
 CATEGORIES =	net
 
