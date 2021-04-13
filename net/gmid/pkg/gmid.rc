@@ -2,17 +2,12 @@
 #
 # $OpenBSD$
 
-daemon="/usr/local/bin/gmid"
+daemon="${LOCALBASE}/bin/gmid"
 daemon_flags="-c /etc/gmid.conf"
 daemon_user="root"
 
 . /etc/rc.d/rc.subr
 
-#pexp="${daemon}${daemon_flags:+ ${daemon_flags}}"
-
 rc_bg=YES
-
-#rc_reload= # (undefined)
-#rc_usercheck=YES
 
 rc_cmd $1
