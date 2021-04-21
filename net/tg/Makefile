@@ -2,7 +2,7 @@
 
 COMMENT =	terminal client for Telegram
 
-MODPY_EGG_VERSION =	0.7.0
+MODPY_EGG_VERSION =	0.8.0
 
 DISTNAME =	tg-${MODPY_EGG_VERSION}
 
