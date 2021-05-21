@@ -1,4 +1,28 @@
-/* $OpenBSD$ */
+/* $OpenBSD: audio_driver_sndio.cpp,v 1.2 2021/05/03 19:10:24 thfr Exp $ */
+/*************************************************************************/
+/*  audio_driver_sndio.cpp                                               */
+/*************************************************************************/
+/* Copyright (c) 2020 Omar Polo.                                         */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
 
 #include "audio_driver_sndio.h"
 
@@ -7,15 +31,11 @@
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
-#include <poll.h>
-#include <stdio.h>
-
 Error AudioDriverSndio::init() {
 	active = false;
 	thread_exited = false;
 	exit_thread = false;
 	speaker_mode = SPEAKER_MODE_STEREO;
-	was_active = 0;
 
 	handle = sio_open(SIO_DEVANY, SIO_PLAY, 0);
 	ERR_FAIL_COND_V(handle == NULL, ERR_CANT_OPEN);
@@ -23,30 +43,34 @@ Error AudioDriverSndio::init() {
 	struct sio_par par;
 	sio_initpar(&par);
 
-	par.bits = 16;
+	par.bits = 32;
+	par.bps = 4;
 	par.rate = GLOBAL_GET("audio/mix_rate");
+	par.appbufsz = 50 * par.rate / 1000;
 
-	/*
-	 * XXX: require SIO_SYNC instead of SIO_IGNORE (the default) ?
-	 * what is the most sensible choice for a game?
-	 */
-	// par.xrun = SIO_ERROR;
+	if (!sio_setpar(handle, &par)) {
+		return ERR_CANT_OPEN;
+	}
 
-	if (!sio_setpar(handle, &par))
-		ERR_FAIL_COND_V(1, ERR_CANT_OPEN);
+	if (!sio_getpar(handle, &par)) {
+		return ERR_CANT_OPEN;
+	}
 
-	if (!sio_getpar(handle, &par))
-		ERR_FAIL_COND_V(1, ERR_CANT_OPEN);
+	if (par.bits != 32 || par.bps != 4 || par.le != SIO_LE_NATIVE) {
+		return ERR_CANT_OPEN;
+	}
+
+	if (!sio_start(handle)) {
+		return ERR_CANT_OPEN;
+	}
 
 	mix_rate = par.rate;
 	channels = par.pchan;
 	period_size = par.appbufsz;
 
-	samples_in.resize(period_size * channels);
-	samples_out.resize(period_size * channels);
+	samples.resize(period_size * channels);
 
-	mutex = Mutex::create();
-	thread = Thread::create(AudioDriverSndio::thread_func, this);
+	thread.start(AudioDriverSndio::thread_func, this);
 
 	return OK;
 }
@@ -54,72 +78,25 @@ Error AudioDriverSndio::init() {
 void AudioDriverSndio::thread_func(void *p_udata) {
 	AudioDriverSndio *ad = (AudioDriverSndio*)p_udata;
 
-	int nfds = sio_nfds(ad->handle);
-	struct pollfd *pfds;
-	if ((pfds = (struct pollfd*)calloc(sizeof(*pfds), nfds)) == NULL) {
-		ERR_PRINTS("cannot allocate memory");
-		ad->active = false;
-		ad->exit_thread = true;
-		ad->thread_exited = true;
-		return;
-	}
+	for (size_t i = 0; i < ad->period_size * ad->channels; ++i)
+		ad->samples.write[i] = 0;
 
 	while (!ad->exit_thread) {
-		if (ad->was_active) {
-			nfds = sio_pollfd(ad->handle, pfds, POLLOUT);
-			if (nfds > 0) {
-				if (poll(pfds, nfds, -1) < 0) {
-					ERR_PRINTS("sndio: poll failed");
-					ad->exit_thread = true;
-					break;
-				}
-			}
-		}
-
 		ad->lock();
 		ad->start_counting_ticks();
 
-		if (!ad->active) {
-			if (ad->was_active) {
-				ad->was_active = 0;
-				sio_stop(ad->handle);
-			}
-
-			ad->stop_counting_ticks();
-			ad->unlock();
-			/* XXX: sleep a bit here? */
-			continue;
-		} else {
-			if (!ad->was_active) {
-				ad->was_active = 1;
-				sio_start(ad->handle);
-			}
-
-			ad->audio_server_process(ad->period_size, ad->samples_in.ptrw());
-
-			for (size_t i = 0; i < ad->period_size*ad->channels; ++i) {
-				ad->samples_out.write[i] = ad->samples_in[i] >> 16;
-			}
-		}
-
-		size_t left = ad->period_size * ad->channels * sizeof(int16_t);
-		size_t wrote = 0;
-
-		while (left != 0 && !ad->exit_thread) {
-			const uint8_t *src = (const uint8_t*)ad->samples_out.ptr();
-			size_t w = sio_write(ad->handle, (void*)(src + wrote), left);
-
-			if (w == 0 && sio_eof(ad->handle)) {
-				ERR_PRINTS("sndio: fatal error");
-				ad->exit_thread = true;
-			} else {
-				wrote += w;
-				left  -= w;
-			}
+		if (ad->active) {
+			ad->audio_server_process(ad->period_size, ad->samples.ptrw());
 		}
 
 		ad->stop_counting_ticks();
 		ad->unlock();
+
+		size_t bytes = ad->period_size * ad->channels * sizeof(int32_t);
+		if (sio_write(ad->handle, ad->samples.ptr(), bytes) != bytes) {
+			ERR_PRINTS("sndio: fatal error");
+			ad->exit_thread = true;
+		}
 	}
 
 	ad->thread_exited = true;
@@ -138,30 +115,16 @@ AudioDriver::SpeakerMode AudioDriverSndio::get_speaker_mode() const {
 }
 
 void AudioDriverSndio::lock() {
-	if (!thread || !mutex)
-		return;
-	mutex->lock();
+	mutex.lock();
 }
 
 void AudioDriverSndio::unlock() {
-	if (!thread || !mutex)
-		return;
-	mutex->unlock();
+	mutex.unlock();
 }
 
 void AudioDriverSndio::finish() {
-	if (thread) {
-		exit_thread = true;
-		Thread::wait_to_finish(thread);
-
-		memdelete(thread);
-		thread = NULL;
-	}
-
-	if (mutex) {
-		memdelete(mutex);
-		mutex = NULL;
-	}
+	exit_thread = true;
+	thread.wait_to_finish();
 
 	if (handle) {
 		sio_close(handle);
@@ -170,8 +133,6 @@ void AudioDriverSndio::finish() {
 }
 
 AudioDriverSndio::AudioDriverSndio() {
-	mutex = NULL;
-	thread = NULL;
 }
 
 AudioDriverSndio::~AudioDriverSndio() {

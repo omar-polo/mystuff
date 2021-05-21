@@ -22,6 +22,6 @@ NO_TEST=	Yes
 SUBST_VARS+=	VERSION
 
 MODPY_ADJ_FILES +=	script/scons script/sconsign script/scons-time
-MODPY_VERSION = 3.7
+MODPY_VERSION = 3.8
 
 .include <bsd.port.mk>

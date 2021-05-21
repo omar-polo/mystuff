@@ -1,0 +1,43 @@
+$OpenBSD$
+
+XXX: take the comment from games/godot patch, it's the same!
+
+Index: thirdparty/embree-aarch64/common/sys/sysinfo.cpp
+--- thirdparty/embree-aarch64/common/sys/sysinfo.cpp.orig
++++ thirdparty/embree-aarch64/common/sys/sysinfo.cpp
+@@ -595,6 +595,26 @@ namespace embree
+ 
+ #endif
+ 
++#if defined(__OpenBSD__)
++
++namespace embree
++{
++  std::string getExecutableFileName()
++  {
++    return "";
++  }
++
++  size_t getVirtualMemoryBytes() {
++    return 0;
++  }
++
++  size_t getResidentMemoryBytes() {
++    return 0;
++  }
++}
++
++#endif
++
+ ////////////////////////////////////////////////////////////////////////////////
+ /// Mac OS X Platform
+ ////////////////////////////////////////////////////////////////////////////////
+@@ -643,7 +663,7 @@ namespace embree
+     static int nThreads = -1;
+     if (nThreads != -1) return nThreads;
+ 
+-#if defined(__MACOSX__) || defined(__ANDROID__)
++#if defined(__MACOSX__) || defined(__ANDROID__) || defined(__OpenBSD__)
+     nThreads = sysconf(_SC_NPROCESSORS_ONLN); // does not work in Linux LXC container
+     assert(nThreads);
+ #else

@@ -1,10 +1,12 @@
 # $OpenBSD$
 
 #		|----------------------------------------------------------|
-COMMENT =	opinionated client for Pleroma and Gemini protocol
+COMMENT =	opinionated client for Pleroma and the Gemini protocol
 
-DISTNAME =	121eaed346
-PKGNAME =	tinmop-0.5.1
+V =		0.5.9
+#DISTNAME =	v${V}
+DISTNAME =	6228858e79
+PKGNAME =	tinmop-${V}
 
 # XXX: tmp
 WRKSRC =	${WRKDIR}/tinmop
@@ -15,7 +17,7 @@ CATEGORIES =	net
 
 HOMEPAGE =	https://notabug.org/cage/tinmop.git
 
-#MAINTAINER =		???
+MAINTAINER =	Omar Polo <op@omarpolo.com>
 
 # GPLv3
 PERMIT_PACKAGE =	Yes
@@ -24,106 +26,61 @@ PERMIT_PACKAGE =	Yes
 #WANTLIB =		???
 
 MASTER_SITES =		https://notabug.org/cage/tinmop/archive/
+MASTER_SITES0 =		http://beta.quicklisp.org/archive/
 
-#EXTRACT_SUFX =		.tar.bz2
+DISTFILES =		${DISTNAME}${EXTRACT_SUFX} \
+			{alexandria/2020-09-25/}alexandria-20200925-git.tgz:0 \
+			{cl-ppcre/2019-05-21/}cl-ppcre-20190521-git.tgz:0 \
+			{tooter/2020-12-20/}tooter-20201220-git.tgz:0 \
+			{croatoan/2021-01-24/}croatoan-20210124-git.tgz:0 \
+			{osicat/2020-09-25/}osicat-20200925-git.tgz:0 \
+			{cl-spark/2015-07-09/}cl-spark-20150709-git.tgz:0 \
+			{access/2021-01-24/}access-20210124-git.tgz:0 \
+			{cl-sqlite/2019-08-13/}cl-sqlite-20190813-git.tgz:0 \
+			{sxql/2020-12-20/}sxql-20201220-git.tgz:0 \
+			{sxql-composer/2020-03-25/}sxql-composer-20200325-git.tgz:0 \
+			{cl-marshal/2020-10-16/}cl-marshal-20201016-git.tgz:0 \
+			{bordeaux-threads/2020-06-10/}bordeaux-threads-v0.8.8.tgz:0 \
+			{cl-base64/2020-10-16/}cl-base64-20201016-git.tgz:0 \
+			{cl+ssl/2021-01-24/}cl+ssl-20210124-git.tgz:0 \
+			{log4cl/2020-09-25/}log4cl-20200925-git.tgz:0 \
+			{local-time/2021-01-24/}local-time-20210124-git.tgz:0 \
+			{cl-colors2/2020-02-18/}cl-colors2-20200218-git.tgz:0 \
+			{cl-i18n/2020-07-15/}cl-i18n-20200715-git.tgz:0 \
+			{clunit2/2020-10-16/}clunit2-20201016-git.tgz:0 \
+			{esrap/2020-12-20/}esrap-20201220-git.tgz:0 \
+			{ieee-floats/2017-08-30/}ieee-floats-20170830-git.tgz:0 \
+			{parse-number/2018-02-28/}parse-number-v1.7.tgz:0 \
+			{cl-html5-parser/2019-05-21/}cl-html5-parser-20190521-git.tgz:0 \
+			{unix-opts/2021-01-24/}unix-opts-20210124-git.tgz:0 \
+			{crypto-shortcuts/2020-10-16/}crypto-shortcuts-20201016-git.tgz:0 \
+			{drakma/2019-11-30/}drakma-v2.0.7.tgz:0 \
+			{usocket/2019-12-27/}usocket-0.8.3.tgz:0 \
+			{babel/2020-09-25/}babel-20200925-git.tgz:0 \
+			{percent-encoding/2012-10-13/}percent-encoding-20121013-git.tgz:0 \
+			{uiop/2020-02-18/}uiop-3.3.4.tgz:0 \
 
-# Standard for C++ ports:
-#COMPILER =		base-clang ports-gcc base-gcc
-# Standard for C++11 or newer:
-#COMPILER =		base-clang ports-gcc
-# Ports that require a non-default compiler that do *not* use C++ should set this:
-#COMPILER_LANGS =	c
+BUILD_DEPENDS =		devel/gettext,-runtime \
+			lang/sbcl
 
-# Any modules we may be using
-#MODULES =		???
-
-# Dependencies
-#BUILD_DEPENDS =	???
-#RUN_DEPENDS =		???
-#LIB_DEPENDS =		???
-#TEST_DEPENDS =		???
-
-#MAKE_FLAGS =		???
-#MAKE_ENV =		???
-#FAKE_FLAGS =		???
-#TEST_FLAGS =		???
-
-# build/configuration variables
-#
-#SEPARATE_BUILD =	Yes (build in a directory other than WRKSRC)
-#SEPARATE_BUILD =	flavored (distinct flavors may share a common WRKSRC)
+DESTDIRNAME =		destdir
+WRKDIST =		${WRKSRC}
 
 USE_GMAKE =		Yes
 
-#USE_GROFF =		Yes
-# Programs that require GNU libtool to build instead of the OpenBSD one
-# should use this option. Add a comment explaining why. Don't use this if
-# a port requires libtool's .m4 files but otherwise can use OpenBSD libtool,
-# in that case use "BUILD_DEPENDS=devel/libtool" instead.
-#USE_LIBTOOL=		gnu
-# Set CONFIGURE_STYLE to value corresponding to some standard configuration
-#	  perl [modbuild]: perl's MakeMaker Makefile.PL (modbuild: perl's
-#	  Module::Build Build.PL)
-#	  gnu [autoconf] [old] [dest]: gnu style configure (old: no
-#	  sysconfdir), (dest: add DESTDIR, does not handle it),
-#	  autoconf: run autoconf to regenerate configure script. implies gnu.
-#	            (see also "do-gen" target below).
-#	XXX: cygnus products do NOT use autoconf for making the main
-#		configure from configure.in
-#	  imake [noman]: port uses imake for configuration.
-#	  (noman: no man page installation)
-#	  simple: port has its own configure script
-#	  none: override default CONFIGURE_STYLE coming from a module
-#	        (needed for some ports using lang/python, etc.)
-
 CONFIGURE_STYLE =	gnu
 
-#CONFIGURE_SCRIPT =	??? (if other than configure)
-#CONFIGURE_ARGS =	???
-#CONFIGURE_ENV =	???
+AUTOCONF_VERSION =	2.69
+AUTOMAKE_VERSION =	1.16
 
-# for gnu stuff
-#AUTOCONF_VERSION =	??? (defaults to 2.13)
-#AUTOMAKE_VERSION =	??? (defaults to 1.4)
-# config.guess and others are copied here
-#MODGNU_CONFIG_GUESS_DIRS = ??? (defaults to ${WRKSRC})
+CONFIGURE_ENV +=	LANG=en_US.UTF-8
+MAKE_ENV +=		LANG=en_US.UTF-8
 
-# Is the build automagic or is it interactive
-#
-#IS_INTERACTIVE =		Yes
-#TEST_IS_INTERACTIVE =		Yes
+pre-configure:
+	find ${WRKDIR} -type f -name \*.asd -a \! -name tinmop.asd \
+		-exec ln -s {} ${WRKSRC} \;
 
-# Things that we don't want to do for this port/package
-# Generally, DON'T set anything to No if it's not needed.
-# The time gained is not worth it.
-#
-#NO_BUILD =		Yes
-#NO_TEST =		Yes
-
-# Overrides for default values
-#
-#CFLAGS =		???
-#LDFLAGS =		???
-#MAKE_FILE =		???
-#PKG_ARCH =		??? (* for arch-independent packages)
-#WRKDIST =		??? if other than ${WRKDIR}/${DISTNAME}
-#WRKSRC =		??? if other than ${WRKDIST}
-#WRKBUILD =		??? if other than ${WRKSRC}
-#WRKCONF =		??? if other than ${WRKBUILD}
-
-#ALL_TARGET =		???
-#INSTALL_TARGET =	???
-#TEST_TARGET =		???
-
-# For ports that use a script or autoreconf to generate autoconf/automake
-# files (where "CONFIGURE_STYLE=autoconf" isn't enough), use some/all of these
-# dependencies, and add a do-gen target:
-# 
-#BUILD_DEPENDS =	${MODGNU_AUTOCONF_DEPENDS} \
-#			${MODGNU_AUTOMAKE_DEPENDS} \
-#			devel/libtool
-#
-#do-gen:
-#	cd ${WRKSRC}; ${AUTOCONF_ENV} ./autogen.sh
+# post-configure:
+#	cd ${WRKDIR} && sed '/^LISP_COMPILER =/ s/$/ --eval '
 
 .include <bsd.port.mk>

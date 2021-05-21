@@ -1,8 +1,8 @@
 # $OpenBSD$
 
-COMMENT =	terminal client for Telegram
+COMMENT =	ncurses Telegram client
 
-MODPY_EGG_VERSION =	0.8.0
+MODPY_EGG_VERSION =	0.17.0
 
 DISTNAME =	tg-${MODPY_EGG_VERSION}
 

@@ -1,0 +1,14 @@
+$OpenBSD$
+
+Index: thirdparty/basis_universal/encoder/basisu_enc.cpp
+--- thirdparty/basis_universal/encoder/basisu_enc.cpp.orig
++++ thirdparty/basis_universal/encoder/basisu_enc.cpp
+@@ -208,7 +208,7 @@ namespace basisu
+ 		*pTicks = 1000000;
+ 	}
+ #elif defined(__GNUC__)
+-#include <sys/timex.h>
++#include <sys/time.h>
+ 	inline void query_counter(timer_ticks* pTicks)
+ 	{
+ 		struct timeval cur_time;

@@ -1,0 +1,15 @@
+$OpenBSD$
+
+Index: thirdparty/oidn/mkl-dnn/src/cpu/simple_reorder.hpp
+--- thirdparty/oidn/mkl-dnn/src/cpu/simple_reorder.hpp.orig
++++ thirdparty/oidn/mkl-dnn/src/cpu/simple_reorder.hpp
+@@ -32,6 +32,9 @@
+ #include "simple_q10n.hpp"
+ #include "cpu_isa_traits.hpp"
+ 
++// hope for the best
++#undef _B
++
+ namespace mkldnn {
+ namespace impl {
+ namespace cpu {

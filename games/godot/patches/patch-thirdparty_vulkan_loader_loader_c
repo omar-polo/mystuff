@@ -1,0 +1,20 @@
+$OpenBSD$
+
+Index: thirdparty/vulkan/loader/loader.c
+--- thirdparty/vulkan/loader/loader.c.orig
++++ thirdparty/vulkan/loader/loader.c
+@@ -2857,12 +2857,8 @@ static void RemoveAllNonValidOverrideLayers(struct loa
+     }
+ 
+     char cur_path[MAX_STRING_SIZE];
+-    char *ret = loader_platform_executable_path(cur_path, sizeof(cur_path));
+-    if (ret == NULL) {
+-        loader_log(inst, VK_DEBUG_REPORT_ERROR_BIT_EXT, 0,
+-                   "RemoveAllNonValidOverrideLayers: Failed to get executable path and name");
+-        return;
+-    }
++    // TODO: use ${PREFIX} and tweak the makefile
++    strlcpy(cur_path, "/usr/local/bin/godot", sizeof(cur_path));
+ 
+     // Find out if there is an override layer with same the app_key_path as the path to the current executable.
+     // If more than one is found, remove it and use the first layer

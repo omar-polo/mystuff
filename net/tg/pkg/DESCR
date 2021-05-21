@@ -1,1 +1,3 @@
-# tg
+tg is a ncurses Telegram client with vi-like keybindings.  It supports a
+wide range a of features (view/send photos, videos, voice notes,
+documents, stickers, ...) and secure chats too.

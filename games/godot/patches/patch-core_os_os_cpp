@@ -1,0 +1,15 @@
+$OpenBSD$
+
+Index: core/os/os.cpp
+--- core/os/os.cpp.orig
++++ core/os/os.cpp
+@@ -156,7 +156,8 @@ int OS::get_low_processor_usage_mode_sleep_usec() cons
+ }
+ 
+ String OS::get_executable_path() const {
+-	return _execpath;
++	// TODO: use ${PREFIX} and tweak the makefile
++	return "/usr/local/bin/godot";
+ }
+ 
+ int OS::get_process_id() const {

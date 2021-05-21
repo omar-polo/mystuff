@@ -1,0 +1,23 @@
+$OpenBSD$
+
+Index: platform/linuxbsd/os_linuxbsd.cpp
+--- platform/linuxbsd/os_linuxbsd.cpp.orig
++++ platform/linuxbsd/os_linuxbsd.cpp
+@@ -116,6 +116,8 @@ String OS_LinuxBSD::get_name() const {
+ 	return "FreeBSD";
+ #elif defined(__NetBSD__)
+ 	return "NetBSD";
++#elif defined(__OpenBSD__)
++	return "OpenBSD";
+ #else
+ 	return "BSD";
+ #endif
+@@ -397,7 +399,7 @@ Error OS_LinuxBSD::move_to_trash(const String &p_path)
+ 	// The trash can is successfully created, now we check that we don't exceed our file name length limit.
+ 	// If the file name is too long trim it so we can add the identifying number and ".trashinfo".
+ 	// Assumes that the file name length limit is 255 characters.
+-	String file_name = basename(p_path.utf8().get_data());
++	String file_name = p_path.get_basename();
+ 	if (file_name.length() > 240) {
+ 		file_name = file_name.substr(0, file_name.length() - 15);
+ 	}
